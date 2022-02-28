@@ -12,16 +12,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+print('starting...')
+
 nx = 40        # number of cells
 ny = 40        # number of cells
 k = 384.1      # thermal conductivity of Cu in W·m−1·K−1
                # https://en.wikipedia.org/wiki/Thermal_conductivity
 c = 0.385      # Cu specific heat capacity, J·g-1·K-1
 rho = 8.96e6   # Cu density, g·m-3
-dt = 0.1        # s
+dt = 0.2        # s
 lx = 1         # m
 ly = 1         # m
-n_iter = 5000
+n_iter = 1000
 
 all_x = np.linspace(0, lx, nx)
 all_y = np.linspace(0, ly, ny)
@@ -80,25 +82,28 @@ for i in range(1, n_iter+1):
                 T[i][y, x] = T[i-1][y, x] - k*dt/(cellsize_y**2*c*rho) * (2 * T[i-1][y, x] - T[i-1][y-1, x] - T[i-1][y+1, x]) \
                                           - k*dt/(cellsize_x**2*c*rho) * (2 * T[i-1][y, x] - T[i-1][y, x-1] - T[i-1][y, x+1] )
 
-for i in (0, 1, 2, 5, 10, 50, 100, 200, 500, 1000, 2000, 5000):
-    plt.figure()
-    plt.imshow(T[i], vmin=0, vmax=T0, extent=[0,lx,0,ly])
-    plt.colorbar()
-    plt.title('Iteration {}'.format(i))
-
-
-
-
-# Generate animation - not working yet, it seems to need some libraries
 if False:
-    fig = plt.figure()
-    #creating a subplot 
-    ax1 = fig.add_subplot(1,1,1)
+    for i in (0, 1, 2, 5, 10, 50, 100, 200, 500, 1000, 2000, 5000):
+        plt.figure()
+        plt.imshow(T[i], vmin=0, vmax=T0, extent=[0,lx,0,ly])
+        plt.colorbar()
+        plt.title('Iteration {}'.format(i))
+
+
+
+
+# Generate animation
+fig = plt.figure()
+#creating a subplot 
+ax1 = fig.add_subplot(1,1,1)
+
+steps_per_frame = 20
+
+def animate(i):
+    ax1.clear()
+    ax1.imshow(T[i*steps_per_frame], vmin=0, vmax=T0)
+    plt.title('t = {:.1f} s'.format(i*dt*steps_per_frame))
+    #plt.colorbar()
     
-    def animate(i):
-        ax1.clear()
-        ax1.imshow(T[i], vmin=0, vmax=T0)
-        
-    anim = animation.FuncAnimation(fig, animate, frames=n_iter, interval=20) 
-    anim.save('heat.gif', writer='imagemagick')
-    
+anim = animation.FuncAnimation(fig, animate, frames=int(n_iter/steps_per_frame), interval=20) 
+anim.save('heat.gif', writer='imagemagick')
